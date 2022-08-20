@@ -1,0 +1,24 @@
+﻿@page  "/author"
+@inject NavigationManager NavManager
+
+<AuthorizeView>
+    <Authorized>
+        <h3>Hello! You are Authorized</h3>
+    </Authorized>
+    <NotAuthorized>
+        <h3>Meeeeh, you are NOBODY</h3>
+    </NotAuthorized>
+</AuthorizeView>
+
+
+@code {
+    [CascadingParameter] protected Task<AuthenticationState> AuthStat { get; set; }
+
+    protected async override Task OnInitializedAsync() {
+        base.OnInitialized();
+        var user = (await AuthStat).User;
+        if (!user.Identity.IsAuthenticated) {
+            NavManager.NavigateTo($"account/login?returnUrl={Uri.EscapeDataString(NavManager.Uri)}");
+        }
+    }
+}

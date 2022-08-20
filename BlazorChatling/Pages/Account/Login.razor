@@ -1,0 +1,91 @@
+﻿@layout LoginLayout
+@page "/account/login"
+@using BlazorChatling.Data
+@using Microsoft.AspNetCore.Mvc
+@using System.ComponentModel.DataAnnotations
+@using System.Security.Claims
+@inject NavigationManager NavManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+
+<EditForm Model="@user" OnValidSubmit="@ValidateUser">
+    <div>
+        <br /><br /><br /><br /><br />
+    </div>
+    <div>
+        <h3 style="font-weight:bold; color:purple">Login</h3>
+    </div>
+    <div>
+        <br />
+    </div>
+    <div class="col-5 row">
+        <input class="form-control col-5" @bind="user.Name" placeholder="name" />
+    </div>
+    <br />
+    <div class="col-5 row">
+        <input type="password" class="form-control col-5" @bind="user.Password" placeholder="password" />
+    </div>
+    <br />
+    <div class="col-5 row">
+        <span class="col-5"></span>
+        <input type="submit" class="form-control col-3 btn btn-primary" value="Login" />
+        <a href="/signup" class="col-3">Sign up</a>
+    </div>
+    <br />
+    <div class="col-5 row" style="text-align:left; font-weight:bold">
+        <span class="col-5">@LoginMesssage</span>
+    </div>
+</EditForm>
+
+
+@code {
+
+    private User user;
+    public string LoginMesssage { get; set; }
+    ClaimsPrincipal claimsPrincipal;
+
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationStateTask { get; set; }
+
+    protected async override Task OnInitializedAsync() {
+
+
+
+
+
+        user = new User();
+
+        claimsPrincipal = (await authenticationStateTask).User;
+
+        if (claimsPrincipal.Identity.IsAuthenticated) {
+            NavManager.NavigateTo("/index");
+        }
+        {
+            user.Name = "philip.cramer@gmail.com";
+            user.Password = "philip.cramer";
+        }
+
+    }
+
+    private async Task<bool> ValidateUser() {
+        //assume that user is valid
+        //call an API
+
+        /*var returnedUser = await userService.LoginAsync(user);
+         * 
+        if (returnedUser.Name != null) {
+            await ((CustomAuthenticationStateProvider)AuthenticationStateProvider).MarkUserAsAuthenticated(returnedUser);
+            NavManager.NavigateTo("/index");
+        } else {
+            LoginMesssage = "Invalid username or password";
+        }*/
+
+        string tag = "all_eco_say";
+
+        ((CustomAuthenticationStateProvider)AuthenticationStateProvider).MarkUserAsAuthenticated(user.Name, tag);
+        NavManager.NavigateTo("/index");
+
+        return await Task.FromResult(true);
+    }
+
+}

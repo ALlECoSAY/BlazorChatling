@@ -1,0 +1,25 @@
+﻿@page "/account/logout"
+@using BlazorChatling.Data
+@using Microsoft.AspNetCore.Authentication
+@inject IHttpContextAccessor httpContextAccessor
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavManager
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationStateTask { get; set; }
+
+    protected async override Task OnInitializedAsync() {
+        //var user = (await authenticationStateTask).User;
+
+        //if (user.Identity.IsAuthenticated) {
+        //    
+        //}
+
+        ((CustomAuthenticationStateProvider)AuthenticationStateProvider).MarkUserAsNotAuthenticated();
+
+        NavManager.NavigateTo("/index");
+
+    }
+
+}

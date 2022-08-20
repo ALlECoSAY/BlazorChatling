@@ -1,0 +1,27 @@
+﻿@inherits LayoutComponentBase
+
+<PageTitle>BlazorChatling</PageTitle>
+
+<div class="page">
+    <div class="sidebar">
+        <NavMenu />
+    </div>
+
+    <main>
+        <div class="top-row px-4">
+            <AuthorizeView>
+                <Authorized>
+                    <a href="/account/logout">Logout</a>
+                </Authorized>
+                <NotAuthorized>
+                    <a href="/account/login">Login</a>
+                </NotAuthorized>
+            </AuthorizeView>    
+            
+        </div>
+
+        <article class="content px-4">
+            @Body
+        </article>
+    </main>
+</div>
