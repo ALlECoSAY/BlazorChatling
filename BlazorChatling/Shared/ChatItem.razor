@@ -1,5 +1,75 @@
-﻿<h3>ChatItem</h3>
+﻿@using BlazorChatling.Data
+@using BlazorChatling.Data.DBContextFiles
+@inject UserInfoGlobalClass UserInfoGlobalClass
+@inject ChatsDAOService ChatsDAOService
+
+@if (@TargetMessage.IdUser == UserInfoGlobalClass.user.Id) {
+    <ContextMenuTrigger WrapperTag="tr" MenuId="selfMassageMenu" Data="TargetMessage">
+        <p class="messageItemSelf">@TargetUser.Name :    @TargetMessage.MsgText        ---msgId=@TargetMessage.Id</p>
+    </ContextMenuTrigger>
+} else {
+    <ContextMenuTrigger WrapperTag="tr" MenuId="foreignMassageMenu" Data="TargetMessage">
+        <p class="messageItem">@TargetUser.Name :    @TargetMessage.MsgText        ---msgId=@TargetMessage.Id</p>
+    </ContextMenuTrigger>
+}
+
+
+<ContextMenu Id="selfMassageMenu">
+    <Item OnClick="@OnClick">Edit</Item>
+    <Seperator></Seperator>
+    <Item>
+        Delete
+        <SubMenu>
+            <Item OnClick="@OnClick">Delete for me</Item>
+            <Seperator></Seperator>
+            <Item OnClick="@OnClick">Delete for all</Item>
+        </SubMenu>
+    </Item>
+</ContextMenu>
+
+<ContextMenu Id="foreignMassageMenu">
+    <Item>Reply</Item>
+</ContextMenu>
+
+
+
 
 @code {
+
+
+    [Parameter]
+    public Messages TargetMessage { get; set; }
+
+    [Parameter]
+    public Users TargetUser { get; set; }
+
+    [Parameter]
+    public MyInputText InputText { get; set; }
+
+
+    private Users sender;
+
+    protected override async Task OnInitializedAsync() {
+        //sender = await ChatsDAOService.getUser(TargetMessage.IdUser);
+
+    }
+
+
+
+    void editMessage(ItemClickEventArgs e) {
+        var currentMessage = e.Data as Messages;
+        InputText.text = currentMessage.MsgText;
+    }
+    void deleteMessageForMe(ItemClickEventArgs e) {
+        var currentMessage = e.Data as Messages;
+    }
+    void deleteMessageForAll(ItemClickEventArgs e) {
+        var currentMessage = e.Data as Messages;
+    }
+    void OnClick(ItemClickEventArgs e){
+        string er = e.ContextMenuTrigger.ToString();
+        string ew = "rfewrwer";
+    }
+
 
 }

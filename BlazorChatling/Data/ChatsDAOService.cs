@@ -14,10 +14,10 @@ namespace BlazorChatling.Data
 
         public async Task<List<Chats>> getChatsByUser(int userId) {
 
-            var result = _chatlingDBContext.Chats.FromSqlRaw(
+            var result = await _chatlingDBContext.Chats.FromSqlRaw(
                 "SELECT Chats.id, Chats.name " +
                 "FROM (Chats INNER JOIN Chat_User ON Chats.id = Chat_User.id_chat) " +
-                "WHERE Chat_User.id_user= {0}", userId).AsNoTracking().ToList();
+                "WHERE Chat_User.id_user= {0}", userId).AsNoTracking().ToListAsync();
             
             return result;
         }
@@ -43,13 +43,13 @@ namespace BlazorChatling.Data
             pStart.Value = shift * number+1;
             pEnd.Value = (shift+1)*number;
 
-            var result = _chatlingDBContext.Messages
+            var result = await _chatlingDBContext.Messages
                 .FromSqlRaw(
-            "SELECT * FROM (SELECT Row_Number() OVER (ORDER BY id DESC) AS RowIndex, * from Messages WHERE id_chat = @id_chat AND (id_user <> @id_user OR is_visible_to_creator = 1) ) as Sub WHERE Sub.RowIndex >= @start AND Sub.RowIndex <= @end"
+            "SELECT id, id_chat, id_user, id_reply_message, msg_text, msg_time, is_edited, is_visible_to_creator, is_reply_visible_to_group FROM (SELECT Row_Number() OVER (ORDER BY id DESC) AS RowIndex, * from Messages WHERE id_chat = @id_chat AND (id_user <> @id_user OR is_visible_to_creator = 1) ) as Sub WHERE Sub.RowIndex >= @start AND Sub.RowIndex <= @end"
             , pChatId, pUserId, pStart, pEnd).AsNoTracking().ToListAsync();
 
 
-            return await result;
+            return  result;
         }
 
         public void insertMessage(Messages message) {
@@ -66,6 +66,28 @@ namespace BlazorChatling.Data
             _chatlingDBContext.Messages.Update(message);
             _chatlingDBContext.SaveChanges();
         }
+
+
+
+        public async Task<Users> getUser(int id) {
+
+
+            var result = await _chatlingDBContext.Users.Where(x => x.Id == id).AsNoTracking().ToListAsync();
+                    
+            return (result)[0];
+
+        }
+
+        public async Task<List<Users>> getUsersInChat(int chat_id) {
+            var result = await _chatlingDBContext.Users.FromSqlRaw(
+                "SELECT Users.id, Users.name, Users.tag " +
+                "FROM (Users INNER JOIN Chat_User ON Users.id = Chat_User.id_user) " +
+                "WHERE Chat_User.id_chat= {0}", chat_id).AsNoTracking().ToListAsync();
+
+            return result;
+
+        }
+
 
 
     }

@@ -19,6 +19,10 @@ var mvcBuilder = services.AddRazorPages();
 services.AddServerSideBlazor();
 //services.AddScoped<NavigationManager>(); Error
 
+
+services.AddBlazorContextMenu();
+
+
 services.AddScoped<UserValidationService>();
 services.AddScoped<ChatsDAOService>();
 
@@ -32,6 +36,7 @@ services.AddSingleton<UserInfoGlobalClass>();
 //services.AddScoped<IHttpContextAccessor>();
 services.AddHttpContextAccessor();
 
+services.AddBlazorContextMenu();
 
 
 

@@ -12,10 +12,47 @@
 </AuthorizeView>
 
 
+
+<ContextMenu Id="myMenu">
+    <Item OnClick="@OnClick"> Menu -1</Item>
+    <Item OnClick="@OnClick" Enabled = "false"> Menu -2</Item>
+    <Item OnClick="@OnClick"> Menu -3</Item>
+       <Seperator></Seperator>
+    <Item> 
+        SubMenu
+        <SubMenu>
+            <Item OnClick="@OnClick"> SubMenu -1</Item>
+            <Item OnClick="@OnClick"> SubMenu -2</Item>
+        </SubMenu>
+
+
+    </Item>
+
+</ContextMenu>
+
+
+<ContextMenuTrigger MenuId="myMenu">
+    <p> RuightClick me</p>
+</ContextMenuTrigger>
+
+
+<label>@text</label>
+
+
+
 @code {
     [CascadingParameter] protected Task<AuthenticationState> authenticationStateTask { get; set; }
 
+    string text;
+
     protected async override Task OnInitializedAsync() {
-        
+
     }
+
+
+    void OnClick(ItemClickEventArgs e) {
+        text = $"gkergkregkekgerhk{e.MenuItem}frlewglkwrlgkrwg{e.ContextMenuTargetId}f,lewfkewgk";
+    }
+
+
 }

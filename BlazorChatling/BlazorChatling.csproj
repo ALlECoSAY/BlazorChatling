@@ -11,6 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Blazor.ContextMenu" Version="1.14.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.8" />
     <PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.2.0" />

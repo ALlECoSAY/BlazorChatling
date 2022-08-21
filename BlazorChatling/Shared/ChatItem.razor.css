@@ -1,0 +1,22 @@
+﻿.messageItem {
+    height: 50px;
+    background-color: azure;
+    color: black;
+    text-align: left;
+    line-height: 50px;
+    border: 5px;
+    border-color: blanchedalmond;
+    width: 800px;
+}
+.messageItemSelf {
+    height: 50px;
+    background-color: azure;
+    color: black;
+    text-align: right;
+    line-height: 50px;
+    border: 5px;
+    border-color: blanchedalmond;
+    width: 800px;
+}
+body {
+}

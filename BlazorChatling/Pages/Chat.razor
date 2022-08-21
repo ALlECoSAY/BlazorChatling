@@ -1,10 +1,13 @@
 ﻿@page "/chat/{id:int}"
+@attribute [Authorize]
 @using System.ComponentModel.DataAnnotations
 @using BlazorChatling.Data
 @using BlazorChatling.Data.DBContextFiles
 @inject ChatsDAOService ChatsDAOService
 @inject UserInfoGlobalClass UserInfoGlobalClass
 @inject NavigationManager NavigationManager
+
+
 <div>
     <button @onclick="loadOlderMessages">
         Load more
@@ -14,7 +17,8 @@
 <div style="margin-bottom: 100px;">
     @foreach (Messages message in ((IEnumerable<Messages>)messages).Reverse())
     {
-        <p>@message.IdUser :    @message.MsgText        ---msgId=@message.Id</p>
+        
+        <ChatItem TargetMessage="@message" TargetUser="@participants.Where(x => x.Id == message.IdUser).First()" InputText="inputText"/>
     }
 
 </div>
@@ -24,11 +28,12 @@
         <DataAnnotationsValidator />
         <ValidationSummary />
 
-        <InputText id="text" @bind-Value="inputText.text" />
+        <InputText id="text" @bind-Value="inputText.text"/>
 
         <button type="submit">Submit</button>
     </EditForm>
 </div>
+
 
 
 
@@ -40,8 +45,9 @@
     public int? id { get; set; }
 
     private List<Messages> messages = new List<Messages>();
-    private int shift = 0;
+    IEnumerable<Users> participants = new List<Users>();
 
+    private int shift = 0;
 
 
     public MyInputText inputText;
@@ -50,21 +56,23 @@
     protected async override Task OnInitializedAsync() {
         inputText = new MyInputText();
 
+
         if (UserInfoGlobalClass.user == null || id == null) NavigationManager.NavigateTo("/account/login");
 
+        participants = await ChatsDAOService.getUsersInChat(id.Value);
         loadOlderMessages();
     }
 
-
-
-
-
-
-
-
-
     private void HandleValidSubmit() {
+        if(isEditing) {
+            editingMessage.MsgText = inputText.text;
 
+            inputText.text = string.Empty;
+            ChatsDAOService.editMessage(editingMessage);
+            var msgOrig = messages.Where(x => x.Id == editingMessage.Id).First();
+            msgOrig = editingMessage;
+
+        }
         Messages message = new Messages();
         message.IdChat = id.Value;
         message.IdUser = UserInfoGlobalClass.user.Id;
@@ -84,5 +92,14 @@
     }
 
 
+
+    private bool isEditing = false;
+    private Messages editingMessage;
+
+    public void StartEditing(Messages message) {
+        inputText.text = message.MsgText;
+        editingMessage = message;
+        isEditing = true;
+    }
 
 }
