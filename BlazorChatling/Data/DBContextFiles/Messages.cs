@@ -16,6 +16,7 @@ namespace BlazorChatling.Data.DBContextFiles
         public int IdChat { get; set; }
         public int IdUser { get; set; }
         public int? IdReplyMessage { get; set; }
+        public int? IdReplyUser { get; set; }
         public string MsgText { get; set; }
         public DateTime? MsgTime { get; set; }
         public bool? IsEdited { get; set; }

@@ -29,7 +29,7 @@ services.AddScoped<ChatsDAOService>();
 
 services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
 services.AddSingleton<HttpClient>();
-services.AddSingleton<UserInfoGlobalClass>();
+services.AddScoped<UserInfoGlobalClass>();
 
 
 //delete later
@@ -83,10 +83,11 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.UseEndpoints(endpoints => {
+
     endpoints.MapRazorPages(); //Routes for pages
     endpoints.MapControllers(); //Routes for my API controllers
-});
 
+});
 
 
 
@@ -96,6 +97,7 @@ app.UseStaticFiles();
 
 
 app.MapBlazorHub();
+app.MapHub<ChatlingHub>(ChatlingHub.HubUrl);
 app.MapFallbackToPage("/_Host");
 
 app.Run();

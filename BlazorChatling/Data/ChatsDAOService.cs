@@ -45,7 +45,7 @@ namespace BlazorChatling.Data
 
             var result = await _chatlingDBContext.Messages
                 .FromSqlRaw(
-            "SELECT id, id_chat, id_user, id_reply_message, msg_text, msg_time, is_edited, is_visible_to_creator, is_reply_visible_to_group FROM (SELECT Row_Number() OVER (ORDER BY id DESC) AS RowIndex, * from Messages WHERE id_chat = @id_chat AND (id_user <> @id_user OR is_visible_to_creator = 1) ) as Sub WHERE Sub.RowIndex >= @start AND Sub.RowIndex <= @end"
+            "SELECT id, id_chat, id_user, id_reply_message, id_reply_user, msg_text, msg_time, is_edited, is_visible_to_creator, is_reply_visible_to_group FROM (SELECT Row_Number() OVER (ORDER BY id DESC) AS RowIndex, * from Messages WHERE id_chat = @id_chat AND (id_user <> @id_user OR is_visible_to_creator = 1) AND (id_reply_user = @id_user OR id_reply_user IS NULL OR is_reply_visible_to_group = 1) ) as Sub WHERE Sub.RowIndex >= @start AND Sub.RowIndex <= @end"
             , pChatId, pUserId, pStart, pEnd).AsNoTracking().ToListAsync();
 
 
@@ -87,6 +87,16 @@ namespace BlazorChatling.Data
             return result;
 
         }
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -23,6 +23,7 @@ CREATE TABLE Messages (
 	id_chat INT NOT NULL,
 	id_user INT NOT NULL,
 	id_reply_message INT,
+	id_reply_user INT,
 	msg_text TEXT NOT NULL,
 	msg_time DATETIME DEFAULT GETDATE(),
 	is_edited BIT NOT NULL DEFAULT 'FALSE',

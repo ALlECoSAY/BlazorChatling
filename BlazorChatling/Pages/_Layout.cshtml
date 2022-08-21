@@ -33,5 +33,11 @@
     </div>
 
     <script src="_framework/blazor.server.js"></script>
+    <script>
+        // When the user clicks the button, the page scrolls to the top
+        function OnScrollEvent() {
+            document.documentElement.scrollTo(0, document.body.scrollHeight);
+        }
+    </script>
 </body>
 </html>

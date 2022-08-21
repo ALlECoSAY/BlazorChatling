@@ -65,6 +65,8 @@ namespace BlazorChatling.Data.DBContextFiles
 
                 entity.Property(e => e.IdReplyMessage).HasColumnName("id_reply_message");
 
+                entity.Property(e => e.IdReplyUser).HasColumnName("id_reply_user");
+
                 entity.Property(e => e.IdUser).HasColumnName("id_user");
 
                 entity.Property(e => e.IsEdited)
@@ -89,23 +91,24 @@ namespace BlazorChatling.Data.DBContextFiles
 
                 entity.Property(e => e.MsgTime)
                     .HasColumnType("datetime")
-                    .HasColumnName("msg_time");
+                    .HasColumnName("msg_time")
+                    .HasDefaultValueSql("(getdate())");
 
                 entity.HasOne(d => d.IdChatNavigation)
                     .WithMany(p => p.Messages)
                     .HasForeignKey(d => d.IdChat)
-                    .HasConstraintName("FK__Messages__id_cha__4F7CD00D");
+                    .HasConstraintName("FK__Messages__id_cha__5812160E");
 
                 entity.HasOne(d => d.IdReplyMessageNavigation)
                     .WithMany(p => p.InverseIdReplyMessageNavigation)
                     .HasForeignKey(d => d.IdReplyMessage)
-                    .HasConstraintName("FK__Messages__id_rep__4E88ABD4");
+                    .HasConstraintName("FK__Messages__id_rep__571DF1D5");
 
                 entity.HasOne(d => d.IdUserNavigation)
                     .WithMany(p => p.Messages)
                     .HasForeignKey(d => d.IdUser)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__Messages__id_use__4D94879B");
+                    .HasConstraintName("FK__Messages__id_use__5629CD9C");
             });
 
             modelBuilder.Entity<Users>(entity =>

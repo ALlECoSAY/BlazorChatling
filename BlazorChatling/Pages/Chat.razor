@@ -3,22 +3,53 @@
 @using System.ComponentModel.DataAnnotations
 @using BlazorChatling.Data
 @using BlazorChatling.Data.DBContextFiles
+@using Microsoft.AspNetCore.SignalR.Client;
 @inject ChatsDAOService ChatsDAOService
 @inject UserInfoGlobalClass UserInfoGlobalClass
 @inject NavigationManager NavigationManager
+@inject IJSRuntime JsRuntime
 
-
-<div>
-    <button @onclick="loadOlderMessages">
-        Load more
-    </button>
-</div>
-
+@if (showOlder)
+{
+    <div>
+        <button @onclick="loadOlderMessages">
+            Load more
+        </button>
+    </div>
+}
 <div style="margin-bottom: 100px;">
-    @foreach (Messages message in ((IEnumerable<Messages>)messages).Reverse())
+    @if(messages.Count()>0)
+    foreach (Messages message in ((IEnumerable<Messages>)messages).Reverse())
     {
-        
-        <ChatItem TargetMessage="@message" TargetUser="@participants.Where(x => x.Id == message.IdUser).First()" InputText="inputText"/>
+        @if (@message.IdUser == UserInfoGlobalClass.user.Id) {
+            <ContextMenuTrigger WrapperTag="tr" MenuId="selfMassageMenu" Data="message">
+                @if (!message.IsReplyVisibleToGroup.Value) {
+                    <p class="messageItemSelf">@participants.Where(x => x.Id == message.IdUser).First().Name whispers :: @message.MsgText ||TO @participants.Where(x => x.Id == message.IdReplyUser).First().Name::  @messages.Where(x => x.Id == message.IdReplyMessage).First().MsgText</p>
+                }
+                else if(message.IdReplyMessage!=null){
+                    <p class="messageItemSelf">@participants.Where(x => x.Id == message.IdUser).First().Name  replies ::    @message.MsgText ||TO @participants.Where(x => x.Id == message.IdReplyUser).First().Name::  @messages.Where(x => x.Id == message.IdReplyMessage).First().MsgText</p>
+                }
+                else{
+                    <p class="messageItemSelf">@participants.Where(x => x.Id == message.IdUser).First().Name  says ::    @message.MsgText</p>
+                }
+                
+            </ContextMenuTrigger>
+        } else 
+        {
+            <ContextMenuTrigger WrapperTag="tr" MenuId="foreignMassageMenu" Data="message">
+                @if (!message.IsReplyVisibleToGroup.Value) 
+                {
+                    <p class="messageItem">@participants.Where(x => x.Id == message.IdUser).First().Name whispers :: @message.MsgText ||TO @participants.Where(x => x.Id == message.IdReplyUser).First().Name::  @messages.Where(x => x.Id == message.IdReplyMessage).First().MsgText</p>
+                } else if (message.IdReplyMessage != null) 
+                {
+                    <p class="messageItem">@participants.Where(x => x.Id == message.IdUser).First().Name  replies ::    @message.MsgText ||TO @participants.Where(x => x.Id == message.IdReplyUser).First().Name::  @messages.Where(x => x.Id == message.IdReplyMessage).First().MsgText</p>
+                } else 
+                {
+                    <p class="messageItem">@participants.Where(x => x.Id == message.IdUser).First().Name  says ::    @message.MsgText</p>
+                }
+            </ContextMenuTrigger>
+        }
+
     }
 
 </div>
@@ -28,15 +59,36 @@
         <DataAnnotationsValidator />
         <ValidationSummary />
 
-        <InputText id="text" @bind-Value="inputText.text"/>
+        <InputText style="width:600px" id="text" @bind-Value="inputText.text" />
 
         <button type="submit">Submit</button>
     </EditForm>
 </div>
 
 
+<ContextMenu Id="selfMassageMenu">
+    <Item OnClick="@editMessage">Edit</Item>
+    <Seperator></Seperator>
+    <Item>
+        Delete
+        <SubMenu>
+            <Item OnClick="@deleteMessageForMe">Delete for me</Item>
+            <Seperator></Seperator>
+            <Item OnClick="@deleteMessageForAll">Delete for all</Item>
+        </SubMenu>
+    </Item>
+</ContextMenu>
 
-
+<ContextMenu Id="foreignMassageMenu">
+    <Item>
+        Reply
+        <SubMenu>
+            <Item OnClick="@replyTo">Reply</Item>
+            <Seperator></Seperator>
+            <Item OnClick="@whisperTo">Whisper</Item>
+        </SubMenu>
+    </Item>
+</ContextMenu>
 
 
 
@@ -58,22 +110,73 @@
 
 
         if (UserInfoGlobalClass.user == null || id == null) NavigationManager.NavigateTo("/account/login");
+        await Chate();
+
+    }
+    protected async override Task OnParametersSetAsync() {
+        shift = 0;
+        messages = new List<Messages>();
+        participants = new List<Users>();
+        inputText.text = string.Empty;
+        isEditing = false;
+
+        if (UserInfoGlobalClass.user == null || id == null) NavigationManager.NavigateTo("/account/login");
 
         participants = await ChatsDAOService.getUsersInChat(id.Value);
         loadOlderMessages();
+
     }
 
-    private void HandleValidSubmit() {
+    private async void HandleValidSubmit() {
+        Messages message = new Messages();
         if(isEditing) {
             editingMessage.MsgText = inputText.text;
 
             inputText.text = string.Empty;
             ChatsDAOService.editMessage(editingMessage);
-            var msgOrig = messages.Where(x => x.Id == editingMessage.Id).First();
-            msgOrig = editingMessage;
-
+            StateHasChanged();
+            isEditing = false;
+            await SendAsync(message);
+            return;
         }
-        Messages message = new Messages();
+
+        if (isReplying) { 
+            message.IdChat = id.Value;
+            message.IdUser = UserInfoGlobalClass.user.Id;
+            message.MsgText = inputText.text;
+            message.IdReplyUser = participants.Where(x => x.Id == replyMessage.IdUser).First().Id;
+            message.IdReplyMessage = replyMessage.Id;
+
+            isReplying = false;
+            inputText.text = string.Empty;
+            ChatsDAOService.insertMessage(message);
+            messages.Insert(0, message);
+            StateHasChanged();
+            await JsRuntime.InvokeVoidAsync("OnScrollEvent");
+            await SendAsync(message);
+            return;
+        }
+
+        if (isWhispering) { 
+
+            message.IdChat = id.Value;
+            message.IdUser = UserInfoGlobalClass.user.Id;
+            message.MsgText = inputText.text;
+            message.IdReplyUser = participants.Where(x => x.Id == replyMessage.IdUser).First().Id;
+            message.IdReplyMessage = replyMessage.Id;
+            message.IsReplyVisibleToGroup = false;
+
+            isWhispering = false;
+            inputText.text = string.Empty;
+            ChatsDAOService.insertMessage(message);
+            messages.Insert(0, message);
+            StateHasChanged();
+            await JsRuntime.InvokeVoidAsync("OnScrollEvent");
+            await SendAsync(message);
+            return;
+        }
+
+
         message.IdChat = id.Value;
         message.IdUser = UserInfoGlobalClass.user.Id;
         message.MsgText = inputText.text;
@@ -82,13 +185,19 @@
         inputText.text = string.Empty;
         ChatsDAOService.insertMessage(message);
         messages.Insert(0, message);
+        StateHasChanged();
+        await JsRuntime.InvokeVoidAsync("OnScrollEvent");
+        await SendAsync(message);
         // Process the valid form
     }
 
+    private bool showOlder = true;
     private async void loadOlderMessages() {
 
-        var newMessages = await ChatsDAOService.getMessages(id.Value, UserInfoGlobalClass.user.Id, shift++,2);
+        var newMessages = await ChatsDAOService.getMessages(id.Value, UserInfoGlobalClass.user.Id, shift++,20);
+        if (newMessages.Count < 21) { showOlder = false; }
         messages.AddRange(newMessages);
+        StateHasChanged();
     }
 
 
@@ -96,10 +205,97 @@
     private bool isEditing = false;
     private Messages editingMessage;
 
-    public void StartEditing(Messages message) {
-        inputText.text = message.MsgText;
-        editingMessage = message;
+    #region ContextEvents
+    void editMessage(ItemClickEventArgs e) {
+        var currentMessage = e.Data as Messages;
+        inputText.text = currentMessage.MsgText;
+        editingMessage = currentMessage;
         isEditing = true;
+        StateHasChanged();
     }
+    void deleteMessageForMe(ItemClickEventArgs e) {
+        var currentMessage = e.Data as Messages;
+        messages.Remove(currentMessage);
+        currentMessage.IsVisibleToCreator = false;
+        ChatsDAOService.editMessage(currentMessage);
+        StateHasChanged();
+    }
+    void deleteMessageForAll(ItemClickEventArgs e) {
+        var currentMessage = e.Data as Messages;
+        messages.Remove(currentMessage);
+        ChatsDAOService.deleteMessage(currentMessage);
+        StateHasChanged();
+    }
+    private bool isReplying = false;
+    async void replyTo(ItemClickEventArgs e) {
+        replyMessage = e.Data as Messages;
+        isReplying = true;
+        isWhispering = false;
+    }
+    private Messages replyMessage;
+    private bool isWhispering = false;
+    async void whisperTo(ItemClickEventArgs e) {
+        replyMessage = e.Data as Messages;
+        isWhispering = true;
+        isReplying = false;
+    }
+
+    #endregion
+
+
+
+
+
+
+
+
+
+    private string _hubUrl;
+    private HubConnection _hubConnection;
+    public async Task Chate() {
+        // check username is valid
+
+
+        try {
+
+            // Create the chat client
+            string baseUrl = NavigationManager.BaseUri;
+
+            _hubUrl = baseUrl.TrimEnd('/') + ChatlingHub.HubUrl;
+
+            _hubConnection = new HubConnectionBuilder()
+                .WithUrl(_hubUrl)
+                .Build();
+
+            _hubConnection.On<Users, Messages>("Broadcast", BroadcastMessage);
+
+            await _hubConnection.StartAsync();
+
+        }
+        catch (Exception e) {
+
+        }
+    }
+
+    private void BroadcastMessage(Users user, Messages message) {
+        
+        if (user.Id != UserInfoGlobalClass.user.Id) messages.Insert(0, message);
+
+        // Inform blazor the UI needs updating
+        StateHasChanged();
+    }
+
+    private async Task DisconnectAsync() {
+            await _hubConnection.StopAsync();
+            await _hubConnection.DisposeAsync();
+
+            _hubConnection = null;
+    }
+
+    private async Task SendAsync(Messages message) {
+            await _hubConnection.SendAsync("Broadcast", UserInfoGlobalClass.user, message);
+        }
+    }
+    
 
 }

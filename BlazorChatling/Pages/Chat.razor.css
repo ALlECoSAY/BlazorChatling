@@ -1,7 +1,7 @@
 ﻿
 
 .sender {
-    height: 100px;
+    height: 60px;
     position: fixed;
     bottom: 0%;
     width:80%;
@@ -13,5 +13,27 @@
     color: #fff;
     margin-left: -32px;
     margin-right: -32px;
+    padding-top: 15px;
 }
 
+.messageItem {
+    height: 50px;
+    background-color: azure;
+    color: black;
+    text-align: left;
+    line-height: 50px;
+    border: 5px;
+    border-color: blanchedalmond;
+    width: 1000px;
+}
+
+.messageItemSelf {
+    height: 50px;
+    background-color: azure;
+    color: black;
+    text-align: right;
+    line-height: 50px;
+    border: 5px;
+    border-color: blanchedalmond;
+    width: 1000px;
+}
