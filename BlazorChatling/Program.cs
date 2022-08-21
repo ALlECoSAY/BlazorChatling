@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 
@@ -61,10 +62,11 @@ services.AddAuthorization(options => {
 
 
 //DataBase
-services.AddDbContext<BlazorChatling.Data.DBContextFiles.ChatlingDBContext>(options =>
+/*services.AddDbContext<BlazorChatling.Data.DBContextFiles.ChatlingDBContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
-);
-
+);*/
+services.AddDbContext<BlazorChatling.Data.DBContextFiles.ChatlingDBContext>(options =>
+        options.UseSqlServer(builder.Configuration.GetConnectionString("AZURE_SQL_CONNECTIONSTRING")));
 
 
 var app = builder.Build();
