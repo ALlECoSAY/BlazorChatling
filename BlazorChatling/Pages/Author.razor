@@ -1,5 +1,6 @@
 ﻿@page  "/author"
 @inject NavigationManager NavManager
+@attribute [Authorize]
 
 <AuthorizeView>
     <Authorized>
@@ -12,13 +13,9 @@
 
 
 @code {
-    [CascadingParameter] protected Task<AuthenticationState> AuthStat { get; set; }
+    [CascadingParameter] protected Task<AuthenticationState> authenticationStateTask { get; set; }
 
     protected async override Task OnInitializedAsync() {
-        base.OnInitialized();
-        var user = (await AuthStat).User;
-        if (!user.Identity.IsAuthenticated) {
-            NavManager.NavigateTo($"account/login?returnUrl={Uri.EscapeDataString(NavManager.Uri)}");
-        }
+        
     }
 }

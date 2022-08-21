@@ -6,42 +6,40 @@
 @using System.Security.Claims
 @inject NavigationManager NavManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject UserValidationService UserValidationService
+@inject UserInfoGlobalClass UserInfoGlobalClass
 
-
-<EditForm Model="@user" OnValidSubmit="@ValidateUser">
-    <div>
-        <br /><br /><br /><br /><br />
-    </div>
-    <div>
-        <h3 style="font-weight:bold; color:purple">Login</h3>
-    </div>
-    <div>
+<center>
+    <h1 style="color:red"> @errorMessage</h1>
+    <EditForm Model="@userLocal" OnValidSubmit="@ValidateUser">
+        <div>
+            <br /><br /><br /><br /><br />
+        </div>
+        <div>
+            <h3 style="font-weight:bold; color:purple">Login</h3>
+        </div>
+        <div>
+            <br />
+        </div>
+        <div class="col-5 row">
+            <input class="form-control col-5" @bind="userLocal.Name" placeholder="name" />
+        </div>
         <br />
-    </div>
-    <div class="col-5 row">
-        <input class="form-control col-5" @bind="user.Name" placeholder="name" />
-    </div>
-    <br />
-    <div class="col-5 row">
-        <input type="password" class="form-control col-5" @bind="user.Password" placeholder="password" />
-    </div>
-    <br />
-    <div class="col-5 row">
-        <span class="col-5"></span>
-        <input type="submit" class="form-control col-3 btn btn-primary" value="Login" />
-        <a href="/signup" class="col-3">Sign up</a>
-    </div>
-    <br />
-    <div class="col-5 row" style="text-align:left; font-weight:bold">
-        <span class="col-5">@LoginMesssage</span>
-    </div>
-</EditForm>
-
+        <div class="col-5 row">
+            <input type="password" class="form-control col-5" @bind="userLocal.Password" placeholder="password" />
+        </div>
+        <br />
+        <div class="col-5 row">
+            <span class="col-5"></span>
+            <input type="submit" class="form-control col-3 btn btn-primary" value="Login" />
+        </div>
+        <br />
+    </EditForm>
+</center>
 
 @code {
-
-    private User user;
-    public string LoginMesssage { get; set; }
+    public string errorMessage;
+    private User userLocal;
     ClaimsPrincipal claimsPrincipal;
 
     [CascadingParameter]
@@ -50,42 +48,32 @@
     protected async override Task OnInitializedAsync() {
 
 
-
-
-
-        user = new User();
+        userLocal = new User();
 
         claimsPrincipal = (await authenticationStateTask).User;
 
         if (claimsPrincipal.Identity.IsAuthenticated) {
             NavManager.NavigateTo("/index");
         }
-        {
-            user.Name = "philip.cramer@gmail.com";
-            user.Password = "philip.cramer";
-        }
-
     }
 
     private async Task<bool> ValidateUser() {
-        //assume that user is valid
-        //call an API
 
-        /*var returnedUser = await userService.LoginAsync(user);
-         * 
-        if (returnedUser.Name != null) {
-            await ((CustomAuthenticationStateProvider)AuthenticationStateProvider).MarkUserAsAuthenticated(returnedUser);
+        var user = await UserValidationService.isValid(userLocal.Name, userLocal.Password);
+        UserInfoGlobalClass.user = user;
+        if (user!=null) {
+            string tag = user.Tag;
+
+            ((CustomAuthenticationStateProvider)AuthenticationStateProvider).MarkUserAsAuthenticated(user.Name, user.Tag);
             NavManager.NavigateTo("/index");
-        } else {
-            LoginMesssage = "Invalid username or password";
-        }*/
 
-        string tag = "all_eco_say";
+            return await Task.FromResult(true);
+        }
 
-        ((CustomAuthenticationStateProvider)AuthenticationStateProvider).MarkUserAsAuthenticated(user.Name, tag);
-        NavManager.NavigateTo("/index");
 
-        return await Task.FromResult(true);
+        errorMessage = "Name and/or password are incorrect!";
+        return await Task.FromResult(false);
+
     }
 
 }

@@ -1,0 +1,12 @@
+﻿@inject NavigationManager NavManager
+
+
+<center><h3>Redirecting...</h3></center>
+
+@code {
+    protected override void OnInitialized() {
+        NavManager.NavigateTo($"account/login?returnUrl={Uri.EscapeDataString(NavManager.Uri)}");
+    }
+
+    
+}

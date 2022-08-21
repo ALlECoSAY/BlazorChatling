@@ -1,0 +1,88 @@
+﻿@page "/chat/{id:int}"
+@using System.ComponentModel.DataAnnotations
+@using BlazorChatling.Data
+@using BlazorChatling.Data.DBContextFiles
+@inject ChatsDAOService ChatsDAOService
+@inject UserInfoGlobalClass UserInfoGlobalClass
+@inject NavigationManager NavigationManager
+<div>
+    <button @onclick="loadOlderMessages">
+        Load more
+    </button>
+</div>
+
+<div style="margin-bottom: 100px;">
+    @foreach (Messages message in ((IEnumerable<Messages>)messages).Reverse())
+    {
+        <p>@message.IdUser :    @message.MsgText        ---msgId=@message.Id</p>
+    }
+
+</div>
+
+<div class="sender">
+    <EditForm Model="@inputText" OnValidSubmit="@HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <InputText id="text" @bind-Value="inputText.text" />
+
+        <button type="submit">Submit</button>
+    </EditForm>
+</div>
+
+
+
+
+
+
+@code {
+    [Parameter]
+    public int? id { get; set; }
+
+    private List<Messages> messages = new List<Messages>();
+    private int shift = 0;
+
+
+
+    public MyInputText inputText;
+
+
+    protected async override Task OnInitializedAsync() {
+        inputText = new MyInputText();
+
+        if (UserInfoGlobalClass.user == null || id == null) NavigationManager.NavigateTo("/account/login");
+
+        loadOlderMessages();
+    }
+
+
+
+
+
+
+
+
+
+    private void HandleValidSubmit() {
+
+        Messages message = new Messages();
+        message.IdChat = id.Value;
+        message.IdUser = UserInfoGlobalClass.user.Id;
+        message.MsgText = inputText.text;
+
+
+        inputText.text = string.Empty;
+        ChatsDAOService.insertMessage(message);
+        messages.Insert(0, message);
+        // Process the valid form
+    }
+
+    private async void loadOlderMessages() {
+
+        var newMessages = await ChatsDAOService.getMessages(id.Value, UserInfoGlobalClass.user.Id, shift++,2);
+        messages.AddRange(newMessages);
+    }
+
+
+
+}

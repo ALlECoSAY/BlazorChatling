@@ -1,0 +1,16 @@
+﻿
+
+.sender {
+    height: 100px;
+    position: fixed;
+    bottom: 0%;
+    width:80%;
+    opacity: 1;
+    display: flex;
+    justify-content: center;
+    padding: 5px;
+    background-color: #45a1ff;
+    color: #fff;
+    margin-left: -32px;
+    margin-right: -32px;
+}

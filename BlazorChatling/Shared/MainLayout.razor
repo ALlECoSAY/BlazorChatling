@@ -2,11 +2,10 @@
 
 <PageTitle>BlazorChatling</PageTitle>
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
+<div class="page" style="height: 100%; ">
+    <div class="sidebar" style="overflow:scroll; width:20%">
+            <NavMenu />
     </div>
-
     <main>
         <div class="top-row px-4">
             <AuthorizeView>
@@ -20,7 +19,7 @@
             
         </div>
 
-        <article class="content px-4">
+        <article class="content " style="height:auto;">
             @Body
         </article>
     </main>

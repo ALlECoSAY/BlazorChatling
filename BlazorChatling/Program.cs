@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 
@@ -16,10 +17,16 @@ var services = builder.Services;
 
 var mvcBuilder = services.AddRazorPages();
 services.AddServerSideBlazor();
-//services.AddSingleton<NavigationManager>();
+//services.AddScoped<NavigationManager>(); Error
+
+services.AddScoped<UserValidationService>();
+services.AddScoped<ChatsDAOService>();
+
 
 services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
 services.AddSingleton<HttpClient>();
+services.AddSingleton<UserInfoGlobalClass>();
+
 
 //delete later
 //services.AddScoped<IHttpContextAccessor>();
@@ -46,6 +53,12 @@ services.AddAuthorization(options => {
     options.AddPolicy("MustBeAnAdmin", policy => policy.RequireClaim("Role", "Admin"));
 
 });
+
+
+//DataBase
+services.AddDbContext<BlazorChatling.Data.DBContextFiles.ChatlingDBContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+);
 
 
 
