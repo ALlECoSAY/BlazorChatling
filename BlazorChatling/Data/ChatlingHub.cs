@@ -7,8 +7,8 @@ namespace BlazorChatling.Data
     {
         public const string HubUrl = "/chatx";
 
-        public async Task Broadcast(Users user, Messages message) {
-            await Clients.All.SendAsync("Broadcast", user, message);
+        public async Task Broadcast(Users user, Messages message, TypeOfMessage typeOfMessage) {
+            await Clients.All.SendAsync("Broadcast", user, message, typeOfMessage);
         }
 
         public override Task OnConnectedAsync() {
@@ -23,5 +23,11 @@ namespace BlazorChatling.Data
 
     }
 
+
+    public enum TypeOfMessage {
+        edit,
+        delete,
+        write
+    }
 
 }

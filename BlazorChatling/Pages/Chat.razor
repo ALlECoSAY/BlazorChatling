@@ -4,6 +4,7 @@
 @using BlazorChatling.Data
 @using BlazorChatling.Data.DBContextFiles
 @using Microsoft.AspNetCore.SignalR.Client;
+@using System.Globalization
 @inject ChatsDAOService ChatsDAOService
 @inject UserInfoGlobalClass UserInfoGlobalClass
 @inject NavigationManager NavigationManager
@@ -24,13 +25,13 @@
         @if (@message.IdUser == UserInfoGlobalClass.user.Id) {
             <ContextMenuTrigger WrapperTag="tr" MenuId="selfMassageMenu" Data="message">
                 @if (!message.IsReplyVisibleToGroup.Value) {
-                    <p class="messageItemSelf">@participants.Where(x => x.Id == message.IdUser).First().Name whispers :: @message.MsgText ||TO @participants.Where(x => x.Id == message.IdReplyUser).First().Name::  @messages.Where(x => x.Id == message.IdReplyMessage).First().MsgText</p>
-                }
+                        <p class="messageItemSelf"><b>@participants.Where(x => x.Id == message.IdUser).First().Name</b> <i>whispers</i> <b>>></b> @message.MsgText || <i>to</i>  <u>@participants.Where(x => x.Id == message.IdReplyUser).First().Name >>  @messages.Where(x => x.Id == message.IdReplyMessage).First().MsgText &nbsp;&nbsp;&nbsp;&nbsp; @if (message.IsEdited.Value) {<sub>Edited</sub>} <sup>@message.MsgTime.Value.ToString("T",CultureInfo.GetCultureInfo("de-DE"))</sup></u></p>
+                    }
                 else if(message.IdReplyMessage!=null){
-                    <p class="messageItemSelf">@participants.Where(x => x.Id == message.IdUser).First().Name  replies ::    @message.MsgText ||TO @participants.Where(x => x.Id == message.IdReplyUser).First().Name::  @messages.Where(x => x.Id == message.IdReplyMessage).First().MsgText</p>
+                    <p class="messageItemSelf"><b>@participants.Where(x => x.Id == message.IdUser).First().Name</b>  <i>replies</i> <b>>></b>   @message.MsgText || <i>to</i>  <u>@participants.Where(x => x.Id == message.IdReplyUser).First().Name >>  @messages.Where(x => x.Id == message.IdReplyMessage).First().MsgText &nbsp;&nbsp;&nbsp;&nbsp; @if (message.IsEdited.Value) {<sub>Edited</sub>} <sup>@message.MsgTime.Value.ToString("T",CultureInfo.GetCultureInfo("de-DE"))</sup></u></p>
                 }
                 else{
-                    <p class="messageItemSelf">@participants.Where(x => x.Id == message.IdUser).First().Name  says ::    @message.MsgText</p>
+                        <p class="messageItemSelf"><b>@participants.Where(x => x.Id == message.IdUser).First().Name</b>  <i>says</i> <b>>></b>   @message.MsgText &nbsp;&nbsp;&nbsp;&nbsp; @if (message.IsEdited.Value) {<sub>Edited</sub>} <sup>@message.MsgTime.Value.ToString("T",CultureInfo.GetCultureInfo("de-DE"))</sup></p>
                 }
                 
             </ContextMenuTrigger>
@@ -39,13 +40,13 @@
             <ContextMenuTrigger WrapperTag="tr" MenuId="foreignMassageMenu" Data="message">
                 @if (!message.IsReplyVisibleToGroup.Value) 
                 {
-                    <p class="messageItem">@participants.Where(x => x.Id == message.IdUser).First().Name whispers :: @message.MsgText ||TO @participants.Where(x => x.Id == message.IdReplyUser).First().Name::  @messages.Where(x => x.Id == message.IdReplyMessage).First().MsgText</p>
+                        <p class="messageItem"><b>@participants.Where(x => x.Id == message.IdUser).First().Name</b> <i>whispers</i> <b>>></b> @message.MsgText || <i>to</i> <u>@participants.Where(x => x.Id == message.IdReplyUser).First().Name >>  @messages.Where(x => x.Id == message.IdReplyMessage).First().MsgText</u> &nbsp;&nbsp;&nbsp;&nbsp; @if (message.IsEdited.Value) {<sub>Edited</sub>} <sup>@message.MsgTime.Value.ToString("T",CultureInfo.GetCultureInfo("de-DE"))</sup></p>
                 } else if (message.IdReplyMessage != null) 
                 {
-                    <p class="messageItem">@participants.Where(x => x.Id == message.IdUser).First().Name  replies ::    @message.MsgText ||TO @participants.Where(x => x.Id == message.IdReplyUser).First().Name::  @messages.Where(x => x.Id == message.IdReplyMessage).First().MsgText</p>
+                    <p class="messageItem"><b>@participants.Where(x => x.Id == message.IdUser).First().Name</b>  <i>replies</i> <b>>></b>   @message.MsgText || <i>to</i> <u>@participants.Where(x => x.Id == message.IdReplyUser).First().Name >>  @messages.Where(x => x.Id == message.IdReplyMessage).First().MsgText</u> &nbsp;&nbsp;&nbsp;&nbsp; @if (message.IsEdited.Value) {<sub>Edited</sub>} <sup>@message.MsgTime.Value.ToString("T",CultureInfo.GetCultureInfo("de-DE"))</sup></p>
                 } else 
                 {
-                    <p class="messageItem">@participants.Where(x => x.Id == message.IdUser).First().Name  says ::    @message.MsgText</p>
+                    <p class="messageItem"><b>@participants.Where(x => x.Id == message.IdUser).First().Name</b>  <i>says</i> <b>>></b>  @message.MsgText &nbsp;&nbsp;&nbsp;&nbsp; @if (message.IsEdited.Value) {<sub>Edited</sub>} <sup>@message.MsgTime.Value.ToString("T",CultureInfo.GetCultureInfo("de-DE"))</sup></p>
                 }
             </ContextMenuTrigger>
         }
@@ -111,7 +112,6 @@
 
         if (UserInfoGlobalClass.user == null || id == null) NavigationManager.NavigateTo("/account/login");
         await Chate();
-
     }
     protected async override Task OnParametersSetAsync() {
         shift = 0;
@@ -119,6 +119,7 @@
         participants = new List<Users>();
         inputText.text = string.Empty;
         isEditing = false;
+        showOlder = true;
 
         if (UserInfoGlobalClass.user == null || id == null) NavigationManager.NavigateTo("/account/login");
 
@@ -131,15 +132,14 @@
         Messages message = new Messages();
         if(isEditing) {
             editingMessage.MsgText = inputText.text;
-
+            editingMessage.IsEdited = true;
             inputText.text = string.Empty;
             ChatsDAOService.editMessage(editingMessage);
             StateHasChanged();
             isEditing = false;
-            await SendAsync(message);
+            await SendAsync(editingMessage, TypeOfMessage.edit);
             return;
         }
-
         if (isReplying) { 
             message.IdChat = id.Value;
             message.IdUser = UserInfoGlobalClass.user.Id;
@@ -153,10 +153,9 @@
             messages.Insert(0, message);
             StateHasChanged();
             await JsRuntime.InvokeVoidAsync("OnScrollEvent");
-            await SendAsync(message);
+            await SendAsync(message, TypeOfMessage.write);
             return;
         }
-
         if (isWhispering) { 
 
             message.IdChat = id.Value;
@@ -172,7 +171,7 @@
             messages.Insert(0, message);
             StateHasChanged();
             await JsRuntime.InvokeVoidAsync("OnScrollEvent");
-            await SendAsync(message);
+            await SendAsync(message, TypeOfMessage.write);
             return;
         }
 
@@ -187,7 +186,7 @@
         messages.Insert(0, message);
         StateHasChanged();
         await JsRuntime.InvokeVoidAsync("OnScrollEvent");
-        await SendAsync(message);
+        await SendAsync(message, TypeOfMessage.write);
         // Process the valid form
     }
 
@@ -195,17 +194,18 @@
     private async void loadOlderMessages() {
 
         var newMessages = await ChatsDAOService.getMessages(id.Value, UserInfoGlobalClass.user.Id, shift++,20);
-        if (newMessages.Count < 21) { showOlder = false; }
+        if (newMessages.Count < 20) { showOlder = false; }
         messages.AddRange(newMessages);
         StateHasChanged();
     }
 
 
 
-    private bool isEditing = false;
-    private Messages editingMessage;
+
 
     #region ContextEvents
+    private bool isEditing = false;
+    private Messages editingMessage;
     void editMessage(ItemClickEventArgs e) {
         var currentMessage = e.Data as Messages;
         inputText.text = currentMessage.MsgText;
@@ -220,10 +220,11 @@
         ChatsDAOService.editMessage(currentMessage);
         StateHasChanged();
     }
-    void deleteMessageForAll(ItemClickEventArgs e) {
+    async void deleteMessageForAll(ItemClickEventArgs e) {
         var currentMessage = e.Data as Messages;
         messages.Remove(currentMessage);
         ChatsDAOService.deleteMessage(currentMessage);
+        await SendAsync(currentMessage, TypeOfMessage.delete);
         StateHasChanged();
     }
     private bool isReplying = false;
@@ -267,7 +268,7 @@
                 .WithUrl(_hubUrl)
                 .Build();
 
-            _hubConnection.On<Users, Messages>("Broadcast", BroadcastMessage);
+            _hubConnection.On<Users, Messages, TypeOfMessage>("Broadcast", BroadcastMessage);
 
             await _hubConnection.StartAsync();
 
@@ -277,9 +278,27 @@
         }
     }
 
-    private void BroadcastMessage(Users user, Messages message) {
+    private void BroadcastMessage(Users user, Messages message, TypeOfMessage typeOfMessage) {
+        if (user.Id == UserInfoGlobalClass.user.Id) return;
+        switch (typeOfMessage) { 
+            case TypeOfMessage.delete:
+                messages.RemoveAll(x => x.Id == message.Id);
+
+                break;
+            case TypeOfMessage.write:
+                messages.Insert(0, message);
+
+                break;
+            case TypeOfMessage.edit:
+                var msg = messages.Where(x => x.Id == message.Id).First();
+                msg.MsgText = message.MsgText;
+                msg.IsEdited = true;
+                break;
+        }
+
+
         
-        if (user.Id != UserInfoGlobalClass.user.Id) messages.Insert(0, message);
+        
 
         // Inform blazor the UI needs updating
         StateHasChanged();
@@ -292,10 +311,8 @@
             _hubConnection = null;
     }
 
-    private async Task SendAsync(Messages message) {
-            await _hubConnection.SendAsync("Broadcast", UserInfoGlobalClass.user, message);
+    private async Task SendAsync(Messages message, TypeOfMessage typeOfMessage) {
+            await _hubConnection.SendAsync("Broadcast", UserInfoGlobalClass.user, message, typeOfMessage);
         }
     }
     
-
-}
