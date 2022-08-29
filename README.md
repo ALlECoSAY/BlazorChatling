@@ -4,7 +4,8 @@ Azure web app:
 
 https://chatling.azurewebsites.net/
 
-Available acoounts for entry:
-alex
+Available accounts for entry: (no password)
+
 kolya
 migal
+alex
