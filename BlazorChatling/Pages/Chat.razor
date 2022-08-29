@@ -4,7 +4,6 @@
 @using BlazorChatling.Data
 @using BlazorChatling.Data.DBContextFiles
 @using Microsoft.AspNetCore.SignalR.Client;
-@using System.Globalization
 @inject ChatsDAOService ChatsDAOService
 @inject UserInfoGlobalClass UserInfoGlobalClass
 @inject NavigationManager NavigationManager
@@ -18,35 +17,25 @@
         </button>
     </div>
 }
-<div style="margin-bottom: 100px;">
+<div style="margin-bottom: 100px; width:parent">
     @if(messages.Count()>0)
     foreach (Messages message in ((IEnumerable<Messages>)messages).Reverse())
     {
         @if (@message.IdUser == UserInfoGlobalClass.user.Id) {
             <ContextMenuTrigger WrapperTag="tr" MenuId="selfMassageMenu" Data="message">
-                @if (!message.IsReplyVisibleToGroup.Value) {
-                        <p class="messageItemSelf"><b>@participants.Where(x => x.Id == message.IdUser).First().Name</b> <i>whispers</i> <b>>></b> @message.MsgText || <i>to</i>  <u>@participants.Where(x => x.Id == message.IdReplyUser).First().Name >>  @messages.Where(x => x.Id == message.IdReplyMessage).First().MsgText &nbsp;&nbsp;&nbsp;&nbsp; @if (message.IsEdited.Value) {<sub>Edited</sub>} <sup>@message.MsgTime.Value.ToString("T",CultureInfo.GetCultureInfo("de-DE"))</sup></u></p>
-                    }
-                else if(message.IdReplyMessage!=null){
-                    <p class="messageItemSelf"><b>@participants.Where(x => x.Id == message.IdUser).First().Name</b>  <i>replies</i> <b>>></b>   @message.MsgText || <i>to</i>  <u>@participants.Where(x => x.Id == message.IdReplyUser).First().Name >>  @messages.Where(x => x.Id == message.IdReplyMessage).First().MsgText &nbsp;&nbsp;&nbsp;&nbsp; @if (message.IsEdited.Value) {<sub>Edited</sub>} <sup>@message.MsgTime.Value.ToString("T",CultureInfo.GetCultureInfo("de-DE"))</sup></u></p>
+                @if (message.IdReplyMessage != null) {
+                        <ChatItem Message="message" TargetMessage="@messages.Where(x => x.Id == message.IdReplyMessage).First()" User="@participants.Where(x => x.Id == message.IdUser).First()" TargetUser="@participants.Where(x => x.Id == message.IdReplyUser).First()" />
+                } else {
+                    <ChatItem Message="message" User="UserInfoGlobalClass.user"/>
                 }
-                else{
-                        <p class="messageItemSelf"><b>@participants.Where(x => x.Id == message.IdUser).First().Name</b>  <i>says</i> <b>>></b>   @message.MsgText &nbsp;&nbsp;&nbsp;&nbsp; @if (message.IsEdited.Value) {<sub>Edited</sub>} <sup>@message.MsgTime.Value.ToString("T",CultureInfo.GetCultureInfo("de-DE"))</sup></p>
-                }
-                
             </ContextMenuTrigger>
         } else 
         {
             <ContextMenuTrigger WrapperTag="tr" MenuId="foreignMassageMenu" Data="message">
-                @if (!message.IsReplyVisibleToGroup.Value) 
-                {
-                        <p class="messageItem"><b>@participants.Where(x => x.Id == message.IdUser).First().Name</b> <i>whispers</i> <b>>></b> @message.MsgText || <i>to</i> <u>@participants.Where(x => x.Id == message.IdReplyUser).First().Name >>  @messages.Where(x => x.Id == message.IdReplyMessage).First().MsgText</u> &nbsp;&nbsp;&nbsp;&nbsp; @if (message.IsEdited.Value) {<sub>Edited</sub>} <sup>@message.MsgTime.Value.ToString("T",CultureInfo.GetCultureInfo("de-DE"))</sup></p>
-                } else if (message.IdReplyMessage != null) 
-                {
-                    <p class="messageItem"><b>@participants.Where(x => x.Id == message.IdUser).First().Name</b>  <i>replies</i> <b>>></b>   @message.MsgText || <i>to</i> <u>@participants.Where(x => x.Id == message.IdReplyUser).First().Name >>  @messages.Where(x => x.Id == message.IdReplyMessage).First().MsgText</u> &nbsp;&nbsp;&nbsp;&nbsp; @if (message.IsEdited.Value) {<sub>Edited</sub>} <sup>@message.MsgTime.Value.ToString("T",CultureInfo.GetCultureInfo("de-DE"))</sup></p>
-                } else 
-                {
-                    <p class="messageItem"><b>@participants.Where(x => x.Id == message.IdUser).First().Name</b>  <i>says</i> <b>>></b>  @message.MsgText &nbsp;&nbsp;&nbsp;&nbsp; @if (message.IsEdited.Value) {<sub>Edited</sub>} <sup>@message.MsgTime.Value.ToString("T",CultureInfo.GetCultureInfo("de-DE"))</sup></p>
+                @if (message.IdReplyMessage != null) {
+                        <ChatItem Message="message" TargetMessage="@messages.Where(x => x.Id == message.IdReplyMessage).First()" User="@participants.Where(x => x.Id == message.IdUser).First()" TargetUser="@participants.Where(x => x.Id == message.IdReplyUser).First()" />
+                } else {
+                        <ChatItem Message="message" User="@participants.Where(x => x.Id == message.IdUser).First()" />
                 }
             </ContextMenuTrigger>
         }
@@ -62,7 +51,7 @@
 
         <InputText style="width:600px" id="text" @bind-Value="inputText.text" />
 
-        <button type="submit">Submit</button>
+        <button type="submit">@if (isWhispering) { <strong>Whisper</strong> } else if( isReplying) { <strong>Reply</strong> } else  {<strong>Submit</strong>} </button>
     </EditForm>
 </div>
 
@@ -204,6 +193,8 @@
 
 
     #region ContextEvents
+    
+
     private bool isEditing = false;
     private Messages editingMessage;
     void editMessage(ItemClickEventArgs e) {
@@ -230,6 +221,12 @@
     private bool isReplying = false;
     async void replyTo(ItemClickEventArgs e) {
         replyMessage = e.Data as Messages;
+        if (!replyMessage.IsReplyVisibleToGroup.Value) {
+            isWhispering = true;
+            isReplying = false;
+            return;
+        }
+
         isReplying = true;
         isWhispering = false;
     }

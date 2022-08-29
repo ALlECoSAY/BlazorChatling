@@ -1,75 +1,117 @@
 ﻿@using BlazorChatling.Data
 @using BlazorChatling.Data.DBContextFiles
+@using System.Globalization
 @inject UserInfoGlobalClass UserInfoGlobalClass
 @inject ChatsDAOService ChatsDAOService
 
-@if (@TargetMessage.IdUser == UserInfoGlobalClass.user.Id) {
-    <ContextMenuTrigger WrapperTag="tr" MenuId="selfMassageMenu" Data="TargetMessage">
-        <p class="messageItemSelf">@TargetUser.Name :    @TargetMessage.MsgText        ---msgId=@TargetMessage.Id</p>
-    </ContextMenuTrigger>
+
+@if (@Message.IdUser != UserInfoGlobalClass.user.Id) {
+    <table style="width: 600px;">
+        <tr style="height: 30px;">
+            <td style=" width: 50px;" rowspan="3">
+                <div class="dot">
+                    <h2 class="litera">@User.Name[0]</h2>
+                </div>
+            </td>
+            <td style=" width: 50px;" rowspan="3">
+                <div class="cloudy" />
+            </td>
+            <td class="username-div">
+                @if (Message.IdReplyMessage != null)
+                    if (Message.IsReplyVisibleToGroup.Value) {
+                        <p class="username"><strong>@User.Name</strong> replies to @TargetUser.Name</p>
+                    } else {
+                        <p class="username"><strong>@User.Name</strong> whispers to @TargetUser.Name</p>
+                    }
+                else {
+                    <p class="username"><strong>@User.Name</strong></p>
+                }
+            </td>
+            <td class="time-div">
+                <p class="time">@Message.MsgTime.Value.ToString("T",CultureInfo.GetCultureInfo("de-DE"))</p>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" class="text-area-div">
+                @if (Message.IdReplyMessage != null) {
+                    <div style="margin-left: 10px; border-left:2px solid black; padding-left:10px;">
+                        <p> @TargetMessage.MsgText </p>
+                    </div>
+                }
+                <p style="margin-left: 10px;">@Message.MsgText</p>
+            </td>
+        </tr>
+        <tr style="height: 25px;">
+            <td colspan="2">
+                <div class="edited-div">
+                    @if (Message.IsEdited.Value) {
+                        <p class="edited">edited</p>
+                    }
+                </div>
+            </td>
+        </tr>
+    </table>
 } else {
-    <ContextMenuTrigger WrapperTag="tr" MenuId="foreignMassageMenu" Data="TargetMessage">
-        <p class="messageItem">@TargetUser.Name :    @TargetMessage.MsgText        ---msgId=@TargetMessage.Id</p>
-    </ContextMenuTrigger>
+    <table style="width: 500px; float:right">
+        <tr style="height: 30px;">
+            <td class="username-div">
+                @if (Message.IdReplyMessage != null)
+                    if (Message.IsReplyVisibleToGroup.Value) {
+                        <p class="username"><strong>@User.Name</strong> replies to @TargetUser.Name</p>
+                    } else {
+                        <p class="username"><strong>@User.Name</strong> whispers to @TargetUser.Name</p>
+                    }
+                else {
+                    <p class="username"><strong>@User.Name</strong></p>
+                }
+            </td>
+            <td class="time-div">
+                <p class="time">@Message.MsgTime.Value.ToString("T",CultureInfo.GetCultureInfo("de-DE"))</p>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" class="text-area-div">
+                @if (Message.IdReplyMessage != null) {
+                    <div style="margin-left: 10px; border-left:2px solid black; padding-left:10px;">
+                        <p> @TargetMessage.MsgText </p>
+                    </div>
+                }
+                <p style="margin-left: 10px;">@Message.MsgText</p>
+            </td>
+        </tr>
+        <tr style="height: 25px;">
+            <td colspan="2">
+                <div class="edited-div-self">
+                    @if (Message.IsEdited.Value) {
+                        <p class="edited">edited</p>
+                    }
+                </div>
+            </td>
+        </tr>
+    </table>
 }
 
 
-<ContextMenu Id="selfMassageMenu">
-    <Item OnClick="@OnClick">Edit</Item>
-    <Seperator></Seperator>
-    <Item>
-        Delete
-        <SubMenu>
-            <Item OnClick="@OnClick">Delete for me</Item>
-            <Seperator></Seperator>
-            <Item OnClick="@OnClick">Delete for all</Item>
-        </SubMenu>
-    </Item>
-</ContextMenu>
 
-<ContextMenu Id="foreignMassageMenu">
-    <Item>Reply</Item>
-</ContextMenu>
 
 
 
 
 @code {
-
+    [Parameter]
+    public Messages Message { get; set; }
 
     [Parameter]
-    public Messages TargetMessage { get; set; }
+    public Messages? TargetMessage { get; set; }
 
     [Parameter]
-    public Users TargetUser { get; set; }
+    public Users User { get; set; }
+    
 
     [Parameter]
-    public MyInputText InputText { get; set; }
+    public Users? TargetUser { get; set; }
 
-
-    private Users sender;
-
-    protected override async Task OnInitializedAsync() {
-        //sender = await ChatsDAOService.getUser(TargetMessage.IdUser);
-
-    }
-
-
-
-    void editMessage(ItemClickEventArgs e) {
-        var currentMessage = e.Data as Messages;
-        InputText.text = currentMessage.MsgText;
-    }
-    void deleteMessageForMe(ItemClickEventArgs e) {
-        var currentMessage = e.Data as Messages;
-    }
-    void deleteMessageForAll(ItemClickEventArgs e) {
-        var currentMessage = e.Data as Messages;
-    }
-    void OnClick(ItemClickEventArgs e){
-        string er = e.ContextMenuTrigger.ToString();
-        string ew = "rfewrwer";
-    }
+      
 
 
 }

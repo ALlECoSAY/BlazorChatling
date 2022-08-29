@@ -71,6 +71,7 @@ services.AddDbContext<BlazorChatling.Data.DBContextFiles.ChatlingDBContext>(opti
 
 var app = builder.Build();
 
+
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment()) {
     app.UseExceptionHandler("/Error");

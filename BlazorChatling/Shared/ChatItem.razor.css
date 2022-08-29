@@ -1,22 +1,101 @@
-﻿.messageItem {
-    height: 50px;
-    background-color: azure;
-    color: black;
-    text-align: left;
-    line-height: 50px;
-    border: 5px;
-    border-color: blanchedalmond;
-    width: 800px;
+﻿
+
+table, th, td {
+    border-collapse: collapse;
+    position: relative;
 }
-.messageItemSelf {
-    height: 50px;
-    background-color: azure;
-    color: black;
-    text-align: right;
-    line-height: 50px;
-    border: 5px;
-    border-color: blanchedalmond;
-    width: 800px;
+
+table {
+    margin-top:20px;
 }
-body {
+
+
+.litera {
+    position: absolute;
+    top: 0px;
+    left: 10px;
+}
+
+
+.dot {
+    position: absolute;
+    bottom: 0px;
+    left: 5px;
+    height: 40px;
+    width: 40px;
+    background-color: #bb3030;
+    border-radius: 50%;
+    vertical-align: bottom;
+}
+
+.cloudy {
+    position: absolute;
+    bottom: 0px;
+    right: 0px;
+    height: 50px;
+    width: 50px;
+    background-color: rgb(71, 178, 255);
+}
+
+.cloudy:before {
+    height: 50px;
+    width: 50px;
+    background-color: #FFF;
+    border-radius: 0 0 50px 0;
+    display: inline-block;
+    vertical-align: middle;
+    content: '';
+}
+
+.username {
+    position: absolute;
+    top: 2px;
+    left: 25px;
+}
+
+.time {
+    position: absolute;
+    top: 2px;
+    right: 25px;
+}
+
+.edited {
+    position: absolute;
+    bottom: -13px;
+    right: 25px;
+}
+
+
+.edited-div {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    background-color: rgb(71, 178, 255);
+    width: 100%;
+    height: 100%;
+    border-bottom-right-radius: 25px;
+}
+
+.edited-div-self {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    background-color: rgb(71, 178, 255);
+    width: 100%;
+    height: 100%;
+    border-bottom-left-radius: 25px;
+}
+
+.text-area-div {
+    background-color: rgb(71, 178, 255);
+}
+
+.username-div {
+    background-color: rgb(6, 143, 242);
+    border-top-left-radius: 25px;
+}
+
+.time-div {
+    background-color: rgb(6, 143, 242);
+    border-top-right-radius: 25px;
 }

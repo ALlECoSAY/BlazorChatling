@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace BlazorChatling.Data
 {
+    //model for logininput
     public partial class User
     {
         public int UserId { get; set; }
